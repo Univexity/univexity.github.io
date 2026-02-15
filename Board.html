@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Public Takedown Board</title>
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.report {
+  background: #1e293b;
+  padding: 15px;
+  margin: 10px auto;
+  border-radius: 8px;
+  max-width: 600px;
+}
+
+a {
+  color: #38bdf8;
+}
+</style>
+</head>
+<body>
+
+<h1>Public Takedown Requests</h1>
+
+<div id="reports"></div>
+
+<script>
+
+// Shared reports using localStorage key
+let reports = JSON.parse(localStorage.getItem("reports") || "[]");
+
+const reportsDiv = document.getElementById("reports");
+
+if (reports.length === 0) {
+  reportsDiv.innerHTML = "<p style='text-align:center;'>No takedown requests yet.</p>";
+} else {
+
+  reports.forEach(report => {
+
+    const div = document.createElement("div");
+
+    div.className = "report";
+
+    div.innerHTML = `
+      <b>Game Name:</b> ${report.gameName}<br>
+      <b>Game Link:</b> <a href="${report.gameLink}" target="_blank">${report.gameLink}</a><br>
+      <b>Original Game:</b> ${report.originalGame}
+    `;
+
+    reportsDiv.appendChild(div);
+
+  });
+
+}
+
+</script>
+
+</body>
+</html>
