@@ -76,8 +76,13 @@ button:hover {
 <input type="text" id="originalGame" required>
 
 <button type="submit">Send Takedown Request</button>
-
 </form>
+
+<!-- Added Public Board Button -->
+<br>
+<button onclick="window.location.href='board.html'">
+View Public Takedown Board
+</button>
 
 <div id="reports">
 <h2>Submitted Requests</h2>
@@ -189,3 +194,4 @@ displayReports();
 
 </body>
 </html>
+
