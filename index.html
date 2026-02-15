@@ -2,109 +2,160 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Takedown Request Board</title>
+<title>Univexity Takedown System</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: white;
-  padding: 20px;
-}
+  body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(120deg, #1e293b, #0f172a);
+    color: white;
+  }
 
-h1 {
-  text-align: center;
-}
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+    background: #0f172a;
+  }
 
-form {
-  background: #1e293b;
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 500px;
-  margin: auto;
-}
+  header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
 
-input, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 6px;
-  border: none;
-}
+  header p {
+    color: #94a3b8;
+    font-size: 1rem;
+  }
 
-input {
-  background: #334155;
-  color: white;
-}
+  main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
 
-button {
-  background: #22c55e;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
+  form {
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 550px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
 
-button:hover {
-  background: #16a34a;
-}
+  form label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+  }
 
-#reports {
-  max-width: 600px;
-  margin: 30px auto;
-}
+  form input, form button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+  }
 
-.report {
-  background: #1e293b;
-  padding: 15px;
-  margin-top: 10px;
-  border-radius: 8px;
-}
+  form input {
+    background: #334155;
+    color: white;
+  }
 
-.deleteBtn {
-  background: #dc2626;
-  margin-top: 5px;
-}
-.deleteBtn:hover {
-  background: #b91c1c;
-}
+  form button {
+    background: #22c55e;
+    color: white;
+    font-weight: bold;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  form button:hover {
+    background: #16a34a;
+  }
+
+  #reports {
+    margin-top: 40px;
+    width: 100%;
+    max-width: 650px;
+  }
+
+  .report {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  }
+
+  .report b {
+    color: #38bdf8;
+  }
+
+  .deleteBtn {
+    background: #dc2626;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .deleteBtn:hover {
+    background: #b91c1c;
+  }
+
+  .publicBtn {
+    margin-top: 20px;
+    background: #3b82f6;
+  }
+
+  .publicBtn:hover {
+    background: #2563eb;
+  }
 </style>
 </head>
 <body>
 
-<h1>Game Takedown Request System</h1>
+<header>
+  <h1>Univexity Takedown System</h1>
+  <p>Submit game copy reports and view your submitted takedowns.</p>
+</header>
+
+<main>
 
 <form id="takedownForm">
+  <label>Your Name</label>
+  <input type="text" id="reporterName" placeholder="Enter your name" required>
 
-<label>Your Name</label>
-<input type="text" id="reporterName" required>
+  <label>Game Name</label>
+  <input type="text" id="gameName" placeholder="Name of the copied game" required>
 
-<label>Game Name</label>
-<input type="text" id="gameName" required>
+  <label>Game Link</label>
+  <input type="url" id="gameLink" placeholder="https://example.com" required>
 
-<label>Game Link</label>
-<input type="url" id="gameLink" required>
+  <label>Original Game</label>
+  <input type="text" id="originalGame" placeholder="Original game name" required>
 
-<label>Original Game</label>
-<input type="text" id="originalGame" required>
-
-<button type="submit">Send Takedown Request</button>
+  <button type="submit">Send Takedown Request</button>
 </form>
 
-<br>
-<button onclick="window.location.href='Board.html'">
-View Public Takedown Board
-</button>
+<button class="publicBtn" onclick="window.location.href='Board.html'">View Public Takedown Board</button>
 
 <div id="reports">
-<h2>Submitted Requests</h2>
+  <h2>Submitted Requests</h2>
 </div>
 
 <script>
-
 const webhookURL = "https://discord.com/api/webhooks/1472468359181238385/SDFTcT-Otl5qvGShijflFDuyG4zXJi71GD-jPO5i2HgQAhOjfNuaf0diDd4EfaqIUkSP";
 const roleID = "1472468416828014643";
 
-let reports = JSON.parse(localStorage.getItem("reports") || "[]");
-let currentUser = localStorage.getItem("currentUser") || "";
+// Start fresh: clear previous reports
+let reports = [];
+localStorage.setItem("reports", JSON.stringify(reports));
+
+let currentUser = "";
 
 const form = document.getElementById("takedownForm");
 const reportsDiv = document.getElementById("reports");
@@ -123,7 +174,7 @@ function displayReports() {
       <b>Original:</b> ${r.originalGame}<br>
     `;
 
-    // Show delete button only for the person who submitted it
+    // Show delete button only for the current user
     if (r.reporter === currentUser) {
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
@@ -145,22 +196,22 @@ function displayReports() {
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const reporter = document.getElementById("reporterName").value;
-  const gameName = document.getElementById("gameName").value;
-  const gameLink = document.getElementById("gameLink").value;
-  const originalGame = document.getElementById("originalGame").value;
+  const reporter = document.getElementById("reporterName").value.trim();
+  const gameName = document.getElementById("gameName").value.trim();
+  const gameLink = document.getElementById("gameLink").value.trim();
+  const originalGame = document.getElementById("originalGame").value.trim();
+
+  if(!reporter || !gameName || !gameLink || !originalGame) return;
 
   const report = { reporter, gameName, gameLink, originalGame };
   reports.push(report);
   localStorage.setItem("reports", JSON.stringify(reports));
 
-  // Save current user for delete access
   currentUser = reporter;
-  localStorage.setItem("currentUser", currentUser);
 
   displayReports();
 
-  // Send to Discord webhook
+  // Send webhook to Discord
   const message = {
     content: `<@&${roleID}>`,
     embeds: [
@@ -173,7 +224,7 @@ form.addEventListener("submit", async (e) => {
           { name: "Game Link", value: gameLink },
           { name: "Original Game", value: originalGame }
         ],
-        footer: { text: "Takedown Request System" },
+        footer: { text: "Univexity Takedown System" },
         timestamp: new Date()
       }
     ]
@@ -185,7 +236,7 @@ form.addEventListener("submit", async (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(message)
     });
-    alert("Takedown request sent successfully.");
+    alert("Takedown request sent successfully!");
   } catch {
     alert("Failed to send webhook.");
   }
@@ -194,8 +245,8 @@ form.addEventListener("submit", async (e) => {
 });
 
 displayReports();
-
 </script>
 
+</main>
 </body>
 </html>
