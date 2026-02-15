@@ -106,14 +106,50 @@
     background: #b91c1c;
   }
 
-  .publicBtn {
+  .actionBtn {
     margin-top: 20px;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+    max-width: 300px;
+    font-size: 1rem;
+    transition: 0.3s;
+  }
+
+  .publicBtn {
     background: #3b82f6;
+    color: white;
   }
 
   .publicBtn:hover {
     background: #2563eb;
   }
+
+  .discordBtn {
+    background: #7289da;
+    color: white;
+  }
+
+  .discordBtn:hover {
+    background: #5b6eae;
+  }
+
+  footer {
+    margin-top: 50px;
+    max-width: 700px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.9rem;
+  }
+
+  footer a {
+    color: #3b82f6;
+    text-decoration: none;
+  }
+
 </style>
 </head>
 <body>
@@ -141,20 +177,26 @@
   <button type="submit">Send Takedown Request</button>
 </form>
 
-<button class="publicBtn" onclick="window.location.href='Board.html'">View Public Takedown Board</button>
+<!-- Action Buttons -->
+<button class="actionBtn publicBtn" onclick="window.location.href='Board.html'">View Public Takedown Board</button>
+<button class="actionBtn discordBtn" onclick="window.location.href='https://discord.gg/8wad3WGRgm'">Join Our Discord</button>
 
 <div id="reports">
   <h2>Submitted Requests</h2>
 </div>
 
+<footer>
+  <h3>Terms of Service</h3>
+  <p>By using this system, you agree not to submit false or malicious takedown requests. All submissions must relate to genuine copies of games. Misuse may result in removal from the system. <a href="#">Read full TOS</a></p>
+</footer>
+
 <script>
-const version = "1.0.0"; // Update this whenever you update the site
+const version = "1.0.0"; // Update this when site updates
 const webhookURL = "https://discord.com/api/webhooks/1472468359181238385/SDFTcT-Otl5qvGShijflFDuyG4zXJi71GD-jPO5i2HgQAhOjfNuaf0diDd4EfaqIUkSP";
 const versionWebhookURL = "https://discord.com/api/webhooks/1472473740418879520/7vemJf_xWRR1okc1u_aqG5ZHYLnERT2vs0EON4YPisXbGMGBiH9fCNgeUp41oDAb3n93";
 const roleID = "1472468416828014643";
 
-let reports = []; // Start fresh
-localStorage.setItem("reports", JSON.stringify(reports));
+let reports = JSON.parse(localStorage.getItem("reports") || "[]");
 let currentUser = "";
 
 const form = document.getElementById("takedownForm");
@@ -162,32 +204,28 @@ const reportsDiv = document.getElementById("reports");
 
 function displayReports() {
   reportsDiv.innerHTML = "<h2>Submitted Requests</h2>";
-
   reports.forEach((r, index) => {
     const div = document.createElement("div");
     div.className = "report";
-
     div.innerHTML = `
       <b>Reporter:</b> ${r.reporter}<br>
       <b>Game:</b> ${r.gameName}<br>
       <b>Link:</b> <a href="${r.gameLink}" target="_blank">${r.gameLink}</a><br>
       <b>Original:</b> ${r.originalGame}<br>
     `;
-
-    if (r.reporter === currentUser) {
+    if(r.reporter === currentUser){
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
       deleteBtn.className = "deleteBtn";
       deleteBtn.onclick = () => {
-        if (confirm("Are you sure you want to delete this report?")) {
-          reports.splice(index, 1);
+        if(confirm("Are you sure you want to delete this report?")){
+          reports.splice(index,1);
           localStorage.setItem("reports", JSON.stringify(reports));
           displayReports();
         }
       };
       div.appendChild(deleteBtn);
     }
-
     reportsDiv.appendChild(div);
   });
 }
@@ -195,13 +233,11 @@ function displayReports() {
 // Version check
 (function checkVersion() {
   const lastVersion = localStorage.getItem("siteVersion") || "";
-  if (version !== lastVersion) {
-    fetch(versionWebhookURL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        content: `Website updated! New version: ${version}`
-      })
+  if(version !== lastVersion){
+    fetch(versionWebhookURL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({content:`Website updated! New version: ${version}`})
     });
     localStorage.setItem("siteVersion", version);
   }
@@ -222,36 +258,33 @@ form.addEventListener("submit", async (e) => {
   localStorage.setItem("reports", JSON.stringify(reports));
 
   currentUser = reporter;
-
   displayReports();
 
   // Send Discord webhook
   const message = {
-    content: `<@&${roleID}>`,
-    embeds: [
-      {
-        title: "New Takedown Request",
-        color: 16711680,
-        fields: [
-          { name: "Reporter", value: reporter },
-          { name: "Game Name", value: gameName },
-          { name: "Game Link", value: gameLink },
-          { name: "Original Game", value: originalGame }
-        ],
-        footer: { text: "Univexity Takedown System" },
-        timestamp: new Date()
-      }
-    ]
+    content:`<@&${roleID}>`,
+    embeds:[{
+      title:"New Takedown Request",
+      color:16711680,
+      fields:[
+        {name:"Reporter", value:reporter},
+        {name:"Game Name", value:gameName},
+        {name:"Game Link", value:gameLink},
+        {name:"Original Game", value:originalGame}
+      ],
+      footer:{text:"Univexity Takedown System"},
+      timestamp:new Date()
+    }]
   };
 
-  try {
-    await fetch(webhookURL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(message)
+  try{
+    await fetch(webhookURL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(message)
     });
     alert("Takedown request sent successfully!");
-  } catch {
+  }catch{
     alert("Failed to send webhook.");
   }
 
