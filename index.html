@@ -148,13 +148,13 @@
 </div>
 
 <script>
+const version = "1.0.0"; // Update this whenever you update the site
 const webhookURL = "https://discord.com/api/webhooks/1472468359181238385/SDFTcT-Otl5qvGShijflFDuyG4zXJi71GD-jPO5i2HgQAhOjfNuaf0diDd4EfaqIUkSP";
+const versionWebhookURL = "https://discord.com/api/webhooks/1472473740418879520/7vemJf_xWRR1okc1u_aqG5ZHYLnERT2vs0EON4YPisXbGMGBiH9fCNgeUp41oDAb3n93";
 const roleID = "1472468416828014643";
 
-// Start fresh: clear previous reports
-let reports = [];
+let reports = []; // Start fresh
 localStorage.setItem("reports", JSON.stringify(reports));
-
 let currentUser = "";
 
 const form = document.getElementById("takedownForm");
@@ -174,7 +174,6 @@ function displayReports() {
       <b>Original:</b> ${r.originalGame}<br>
     `;
 
-    // Show delete button only for the current user
     if (r.reporter === currentUser) {
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
@@ -192,6 +191,21 @@ function displayReports() {
     reportsDiv.appendChild(div);
   });
 }
+
+// Version check
+(function checkVersion() {
+  const lastVersion = localStorage.getItem("siteVersion") || "";
+  if (version !== lastVersion) {
+    fetch(versionWebhookURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: `Website updated! New version: ${version}`
+      })
+    });
+    localStorage.setItem("siteVersion", version);
+  }
+})();
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -211,7 +225,7 @@ form.addEventListener("submit", async (e) => {
 
   displayReports();
 
-  // Send webhook to Discord
+  // Send Discord webhook
   const message = {
     content: `<@&${roleID}>`,
     embeds: [
