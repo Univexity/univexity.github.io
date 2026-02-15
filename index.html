@@ -58,6 +58,13 @@ button:hover {
   margin-top: 10px;
   border-radius: 8px;
 }
+.deleteBtn {
+  background: #dc2626;
+  margin-top: 5px;
+}
+.deleteBtn:hover {
+  background: #b91c1c;
+}
 </style>
 </head>
 <body>
@@ -65,6 +72,9 @@ button:hover {
 <h1>Game Takedown Request System</h1>
 
 <form id="takedownForm">
+
+<label>Your Name</label>
+<input type="text" id="reporterName" required>
 
 <label>Game Name</label>
 <input type="text" id="gameName" required>
@@ -78,7 +88,6 @@ button:hover {
 <button type="submit">Send Takedown Request</button>
 </form>
 
-<!-- Updated Public Board Button -->
 <br>
 <button onclick="window.location.href='Board.html'">
 View Public Takedown Board
@@ -95,46 +104,65 @@ const roleID = "1472468416828014643";
 
 let reports = JSON.parse(localStorage.getItem("reports") || "[]");
 
+// Save current user name to match for deletion
+let currentUser = localStorage.getItem("currentUser") || "";
+
 const form = document.getElementById("takedownForm");
 const reportsDiv = document.getElementById("reports");
 
 function displayReports() {
-
   reportsDiv.innerHTML = "<h2>Submitted Requests</h2>";
 
-  reports.forEach(r => {
-
+  reports.forEach((r, index) => {
     const div = document.createElement("div");
     div.className = "report";
 
     div.innerHTML = `
+      <b>Reporter:</b> ${r.reporter}<br>
       <b>Game:</b> ${r.gameName}<br>
       <b>Link:</b> <a href="${r.gameLink}" target="_blank">${r.gameLink}</a><br>
       <b>Original:</b> ${r.originalGame}
     `;
 
+    // Show delete button only if current user is the reporter
+    if (r.reporter === currentUser) {
+      const btn = document.createElement("button");
+      btn.className = "deleteBtn";
+      btn.textContent = "Delete";
+      btn.onclick = () => deleteReport(index);
+      div.appendChild(btn);
+    }
+
     reportsDiv.appendChild(div);
-
   });
+}
 
+// Delete a report
+function deleteReport(index) {
+  if (confirm("Are you sure you want to delete this report?")) {
+    reports.splice(index, 1);
+    localStorage.setItem("reports", JSON.stringify(reports));
+    displayReports();
+  }
 }
 
 form.addEventListener("submit", async (e) => {
-
   e.preventDefault();
 
+  const reporter = document.getElementById("reporterName").value;
   const gameName = document.getElementById("gameName").value;
   const gameLink = document.getElementById("gameLink").value;
   const originalGame = document.getElementById("originalGame").value;
 
-  const report = {
-    gameName,
-    gameLink,
-    originalGame
-  };
+  const report = { reporter, gameName, gameLink, originalGame };
 
   reports.push(report);
   localStorage.setItem("reports", JSON.stringify(reports));
+
+  // Save current user locally for delete checks
+  currentUser = reporter;
+  localStorage.setItem("currentUser", currentUser);
+
   displayReports();
 
   // Send to Discord webhook
@@ -145,47 +173,29 @@ form.addEventListener("submit", async (e) => {
         title: "New Takedown Request",
         color: 16711680,
         fields: [
-          {
-            name: "Game Name",
-            value: gameName
-          },
-          {
-            name: "Game Link",
-            value: gameLink
-          },
-          {
-            name: "Original Game",
-            value: originalGame
-          }
+          { name: "Reporter", value: reporter },
+          { name: "Game Name", value: gameName },
+          { name: "Game Link", value: gameLink },
+          { name: "Original Game", value: originalGame }
         ],
-        footer: {
-          text: "Takedown Request System"
-        },
+        footer: { text: "Takedown Request System" },
         timestamp: new Date()
       }
     ]
   };
 
   try {
-
     await fetch(webhookURL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(message)
     });
-
     alert("Takedown request sent successfully.");
-
   } catch {
-
     alert("Failed to send webhook.");
-
   }
 
   form.reset();
-
 });
 
 displayReports();
