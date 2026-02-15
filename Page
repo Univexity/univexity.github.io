@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Takedown Request Board</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+form {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
+  margin: auto;
+}
+
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: none;
+}
+
+input {
+  background: #334155;
+  color: white;
+}
+
+button {
+  background: #22c55e;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #16a34a;
+}
+
+#reports {
+  max-width: 600px;
+  margin: 30px auto;
+}
+
+.report {
+  background: #1e293b;
+  padding: 15px;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+</style>
+</head>
+<body>
+
+<h1>Game Takedown Request System</h1>
+
+<form id="takedownForm">
+
+<label>Game Name</label>
+<input type="text" id="gameName" required>
+
+<label>Game Link</label>
+<input type="url" id="gameLink" required>
+
+<label>Original Game</label>
+<input type="text" id="originalGame" required>
+
+<button type="submit">Send Takedown Request</button>
+
+</form>
+
+<div id="reports">
+<h2>Submitted Requests</h2>
+</div>
+
+<script>
+
+const webhookURL = "https://discord.com/api/webhooks/1472468359181238385/SDFTcT-Otl5qvGShijflFDuyG4zXJi71GD-jPO5i2HgQAhOjfNuaf0diDd4EfaqIUkSP";
+const roleID = "1472468416828014643";
+
+let reports = JSON.parse(localStorage.getItem("reports") || "[]");
+
+const form = document.getElementById("takedownForm");
+const reportsDiv = document.getElementById("reports");
+
+function displayReports() {
+
+  reportsDiv.innerHTML = "<h2>Submitted Requests</h2>";
+
+  reports.forEach(r => {
+
+    const div = document.createElement("div");
+    div.className = "report";
+
+    div.innerHTML = `
+      <b>Game:</b> ${r.gameName}<br>
+      <b>Link:</b> <a href="${r.gameLink}" target="_blank">${r.gameLink}</a><br>
+      <b>Original:</b> ${r.originalGame}
+    `;
+
+    reportsDiv.appendChild(div);
+
+  });
+
+}
+
+form.addEventListener("submit", async (e) => {
+
+  e.preventDefault();
+
+  const gameName = document.getElementById("gameName").value;
+  const gameLink = document.getElementById("gameLink").value;
+  const originalGame = document.getElementById("originalGame").value;
+
+  const report = {
+    gameName,
+    gameLink,
+    originalGame
+  };
+
+  reports.push(report);
+  localStorage.setItem("reports", JSON.stringify(reports));
+  displayReports();
+
+  // Send to Discord webhook
+  const message = {
+    content: `<@&${roleID}>`,
+    embeds: [
+      {
+        title: "New Takedown Request",
+        color: 16711680,
+        fields: [
+          {
+            name: "Game Name",
+            value: gameName
+          },
+          {
+            name: "Game Link",
+            value: gameLink
+          },
+          {
+            name: "Original Game",
+            value: originalGame
+          }
+        ],
+        footer: {
+          text: "Takedown Request System"
+        },
+        timestamp: new Date()
+      }
+    ]
+  };
+
+  try {
+
+    await fetch(webhookURL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(message)
+    });
+
+    alert("Takedown request sent successfully.");
+
+  } catch {
+
+    alert("Failed to send webhook.");
+
+  }
+
+  form.reset();
+
+});
+
+displayReports();
+
+</script>
+
+</body>
+</html>
