@@ -2,30 +2,28 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Public Takedown Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@600&display=swap" rel="stylesheet">
 <style>
-body {
-  font-family: Arial;
-  background: #0f172a;
-  color: white;
-  padding: 20px;
-}
+/* ===== BASE ===== */
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Roboto',sans-serif; background: linear-gradient(135deg,#0f172a,#1e293b); color:#f1f5f9; min-height:100vh; padding:20px; transition: background 0.5s; }
+h1 { text-align:center; font-family:'Montserrat',sans-serif; font-size:2.5rem; color:#3b82f6; margin-bottom:30px; text-shadow:0 0 10px #3b82f6; }
+a { color:#38bdf8; text-decoration:none; }
+a:hover { text-decoration:underline; }
 
-h1 {
-  text-align: center;
-}
+/* ===== REPORT CARDS ===== */
+#reports { display:flex; flex-direction:column; gap:20px; max-width:800px; margin:0 auto; }
+.report { background: rgba(30,41,59,0.95); padding:25px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.4); transition: transform 0.2s; position:relative; }
+.report:hover { transform: translateY(-5px); }
+.report b { color:#3b82f6; }
+.copyBtn { position:absolute; top:20px; right:20px; padding:8px 12px; background:#3b82f6; border:none; border-radius:12px; color:white; cursor:pointer; font-weight:700; transition: transform 0.2s, background 0.2s; }
+.copyBtn:hover { transform: scale(1.05); background:#2563eb; }
 
-.report {
-  background: #1e293b;
-  padding: 15px;
-  margin: 10px auto;
-  border-radius: 8px;
-  max-width: 600px;
-}
-
-a {
-  color: #38bdf8;
-}
+/* ===== SCROLL BUTTON ===== */
+#scrollTopBtn { position:fixed; bottom:30px; right:30px; padding:12px 16px; border-radius:50%; border:none; background:#3b82f6; color:white; cursor:pointer; box-shadow:0 0 15px #3b82f6; display:none; transition: transform 0.3s; }
+#scrollTopBtn:hover { transform: scale(1.1); }
 </style>
 </head>
 <body>
@@ -34,35 +32,43 @@ a {
 
 <div id="reports"></div>
 
+<button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">⬆️</button>
+
 <script>
-
-// Shared reports using localStorage key
+// ===== LOAD REPORTS =====
 let reports = JSON.parse(localStorage.getItem("reports") || "[]");
-
 const reportsDiv = document.getElementById("reports");
 
-if (reports.length === 0) {
-  reportsDiv.innerHTML = "<p style='text-align:center;'>No takedown requests yet.</p>";
-} else {
-
+function displayReports() {
+  reportsDiv.innerHTML = "";
+  if(reports.length === 0) {
+    reportsDiv.innerHTML = "<p style='text-align:center;'>No takedown requests yet.</p>";
+    return;
+  }
+  
   reports.forEach(report => {
-
     const div = document.createElement("div");
-
     div.className = "report";
-
     div.innerHTML = `
       <b>Game Name:</b> ${report.gameName}<br>
       <b>Game Link:</b> <a href="${report.gameLink}" target="_blank">${report.gameLink}</a><br>
-      <b>Original Game:</b> ${report.originalGame}
+      <b>Original Game:</b> ${report.originalGame}<br>
+      <b>Submitted:</b> ${report.timestamp || "Unknown"}
     `;
-
+    const copyBtn = document.createElement("button");
+    copyBtn.textContent = "Copy Link";
+    copyBtn.className = "copyBtn";
+    copyBtn.onclick = () => { navigator.clipboard.writeText(report.gameLink); alert("Link copied!"); };
+    div.appendChild(copyBtn);
     reportsDiv.appendChild(div);
-
   });
-
 }
 
+// ===== SCROLL BUTTON =====
+const scrollBtn = document.getElementById("scrollTopBtn");
+window.addEventListener('scroll', () => { scrollBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; });
+
+displayReports();
 </script>
 
 </body>
