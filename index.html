@@ -13,18 +13,13 @@ a { color:#3b82f6; text-decoration:none; }
 h1,h2,h3 { font-family:'Montserrat',sans-serif; }
 button { font-family:'Roboto',sans-serif; }
 
-/* ===== LOADING SCREEN ===== */
-#loadingScreen { position:fixed; inset:0; background:#0f172a; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:9999; transition: opacity 0.5s; }
-#loadingScreen h1 { font-size:3rem; color:#3b82f6; margin-bottom:20px; animation: glow 2s infinite alternate; }
-#loadingScreen p { font-size:1.2rem; color:#94a3b8; text-align:center; max-width:400px; }
-
 /* ===== HEADER ===== */
-header { text-align:center; padding:60px 20px; position:relative; }
-header h1 { font-size:3rem; color:#3b82f6; text-shadow:0 0 10px #3b82f6; animation: glow 2s infinite alternate; }
+header { text-align:center; padding:60px 20px; }
+header h1 { font-size:3rem; color:#3b82f6; text-shadow:0 0 10px #3b82f6; }
 header p { margin-top:10px; color:#94a3b8; font-size:1.1rem; }
 
 /* ===== MAIN & FORM ===== */
-main { display:flex; flex-direction:column; align-items:center; gap:40px; padding:30px 20px; opacity:0; transition: opacity 1s ease-in-out; }
+main { display:flex; flex-direction:column; align-items:center; gap:40px; padding:30px 20px; }
 form { background: rgba(30,41,59,0.95); padding:40px; border-radius:20px; width:100%; max-width:650px; box-shadow:0 15px 40px rgba(0,0,0,0.6); position:relative; transition: transform 0.3s; }
 form:hover { transform: translateY(-5px); }
 form label { display:block; margin-top:15px; font-weight:700; color:#38bdf8; }
@@ -57,18 +52,9 @@ footer h3 { margin-bottom:10px; color:#38bdf8; }
 /* ===== SCROLL BUTTON ===== */
 #scrollTopBtn { position:fixed; bottom:30px; right:30px; padding:12px 16px; border-radius:50%; border:none; background:#3b82f6; color:white; cursor:pointer; box-shadow:0 0 15px #3b82f6; display:none; transition: transform 0.3s; }
 #scrollTopBtn:hover { transform: scale(1.1); }
-
-/* ===== GLOW ===== */
-@keyframes glow { 0% { text-shadow:0 0 5px #3b82f6; } 100% { text-shadow:0 0 25px #3b82f6; } }
 </style>
 </head>
 <body>
-
-<!-- ===== LOADING SCREEN ===== -->
-<div id="loadingScreen">
-  <h1>Loading Univexity Takedown...</h1>
-  <p id="loadingTip">Tip: Never share your password with anyone!</p>
-</div>
 
 <header>
   <h1>Univexity Takedown System</h1>
@@ -104,35 +90,8 @@ footer h3 { margin-bottom:10px; color:#38bdf8; }
 </footer>
 
 <script>
-// ===== LOADING SCREEN =====
-const tips = [
-  "Tip: Never share your password with anyone.",
-  "Tip: Always log out of public devices.",
-  "Tip: Enable two-factor authentication.",
-  "Tip: Check URLs carefully before clicking.",
-  "Tip: Don't click suspicious links in DMs.",
-  "Fun Fact: The first website ever made was in 1991!",
-  "Easter Egg: Press 'U' three times quickly!"
-];
-const loadingScreen = document.getElementById('loadingScreen');
-const loadingTip = document.getElementById('loadingTip');
-
-let tipIndex = 0;
-const tipInterval = setInterval(()=>{
-  tipIndex = (tipIndex + 1) % tips.length;
-  loadingTip.textContent = tips[tipIndex];
-}, 3000);
-
-// Hide loading after 3s
-setTimeout(()=>{
-  loadingScreen.style.opacity='0';
-  setTimeout(()=>loadingScreen.style.display='none',500);
-  document.querySelector('main').style.opacity='1';
-  clearInterval(tipInterval);
-},3000);
-
 // ===== VARIABLES =====
-const badWords=["idiot","stupid","fuck","nigger" "retard" "assfuck" "sex" "dick" "porn" "nigga" "bitch" "fart" ""shit" "slut" "moron"];
+const badWords=["idiot","stupid","ass","bitch","bastard","crap","dick","damn","fuck","shit","slut","whore","piss"];
 let reports=JSON.parse(localStorage.getItem("reports")||"[]");
 let currentUser="";
 const form=document.getElementById("takedownForm");
@@ -162,12 +121,12 @@ function displayReports(){
   });
 }
 
-// ===== SCROLL BTN =====
+// ===== SCROLL BUTTON =====
 window.addEventListener('scroll',()=>{scrollBtn.style.display=window.scrollY>300?'block':'none';});
 
 // ===== VALIDATION =====
 function containsBadWord(name){
-  const lowered=name.toLowerCase();
+  const lowered=name.toLowerCase().replace(/[^a-z]/g,"");
   return badWords.some(word=>lowered.includes(word));
 }
 function isMetaLink(url){
