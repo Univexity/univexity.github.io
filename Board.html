@@ -1,75 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Public Takedown Board</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@600&display=swap" rel="stylesheet">
-<style>
-/* ===== BASE ===== */
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Roboto',sans-serif; background: linear-gradient(135deg,#0f172a,#1e293b); color:#f1f5f9; min-height:100vh; padding:20px; transition: background 0.5s; }
-h1 { text-align:center; font-family:'Montserrat',sans-serif; font-size:2.5rem; color:#3b82f6; margin-bottom:30px; text-shadow:0 0 10px #3b82f6; }
-a { color:#38bdf8; text-decoration:none; }
-a:hover { text-decoration:underline; }
-
-/* ===== REPORT CARDS ===== */
-#reports { display:flex; flex-direction:column; gap:20px; max-width:800px; margin:0 auto; }
-.report { background: rgba(30,41,59,0.95); padding:25px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.4); transition: transform 0.2s; position:relative; }
-.report:hover { transform: translateY(-5px); }
-.report b { color:#3b82f6; }
-.copyBtn { position:absolute; top:20px; right:20px; padding:8px 12px; background:#3b82f6; border:none; border-radius:12px; color:white; cursor:pointer; font-weight:700; transition: transform 0.2s, background 0.2s; }
-.copyBtn:hover { transform: scale(1.05); background:#2563eb; }
-
-/* ===== SCROLL BUTTON ===== */
-#scrollTopBtn { position:fixed; bottom:30px; right:30px; padding:12px 16px; border-radius:50%; border:none; background:#3b82f6; color:white; cursor:pointer; box-shadow:0 0 15px #3b82f6; display:none; transition: transform 0.3s; }
-#scrollTopBtn:hover { transform: scale(1.1); }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Board Shutdown</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: #121212;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 750px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            color: #ff5555;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        a {
+            color: #00ffff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-
-<h1>Public Takedown Requests</h1>
-
-<div id="reports"></div>
-
-<button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">⬆️</button>
-
-<script>
-// ===== LOAD REPORTS =====
-let reports = JSON.parse(localStorage.getItem("reports") || "[]");
-const reportsDiv = document.getElementById("reports");
-
-function displayReports() {
-  reportsDiv.innerHTML = "";
-  if(reports.length === 0) {
-    reportsDiv.innerHTML = "<p style='text-align:center;'>No takedown requests yet.</p>";
-    return;
-  }
-  
-  reports.forEach(report => {
-    const div = document.createElement("div");
-    div.className = "report";
-    div.innerHTML = `
-      <b>Game Name:</b> ${report.gameName}<br>
-      <b>Game Link:</b> <a href="${report.gameLink}" target="_blank">${report.gameLink}</a><br>
-      <b>Original Game:</b> ${report.originalGame}<br>
-      <b>Submitted:</b> ${report.timestamp || "Unknown"}
-    `;
-    const copyBtn = document.createElement("button");
-    copyBtn.textContent = "Copy Link";
-    copyBtn.className = "copyBtn";
-    copyBtn.onclick = () => { navigator.clipboard.writeText(report.gameLink); alert("Link copied!"); };
-    div.appendChild(copyBtn);
-    reportsDiv.appendChild(div);
-  });
-}
-
-// ===== SCROLL BUTTON =====
-const scrollBtn = document.getElementById("scrollTopBtn");
-window.addEventListener('scroll', () => { scrollBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; });
-
-displayReports();
-</script>
-
+    <div class="container">
+        <h1>Public Board Shutdown Notice</h1>
+        <p>Dear visitors,</p>
+        <p>We would like to inform you that the Public Board has officially been shut down. This board is no longer maintained on GitHub and will not be updated or monitored here.</p>
+        <p>All reports, updates, and public interactions that were previously handled through this board have been moved to our new main website. This allows us to offer a more secure, modern, and streamlined experience for all users.</p>
+        <p>If you are from the new website or need assistance regarding any reports, please contact our support team directly for guidance. They are available to provide help and answer any questions you might have.</p>
+        <p>To reach support, please visit: <a href="https://discord.gg/2SFx9fGGEw" target="_blank">https://discord.gg/2SFx9fGGEw</a>. We appreciate your understanding and encourage all users to access our new platform for the latest updates and features.</p>
+        <p>Thank you for your continued support as we transition all services to a modern, secure, and efficient platform.</p>
+        <p>— Xyra Studios</p>
+    </div>
 </body>
 </html>
