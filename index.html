@@ -27,6 +27,7 @@ form:hover { transform: translateY(-5px); }
 form label { display:block; margin-top:15px; font-weight:700; color:#38bdf8; }
 form input { width:100%; padding:15px; margin-top:8px; border-radius:12px; border:none; font-size:1rem; background:#334155; color:#f1f5f9; transition:0.3s; }
 form input:focus { outline:2px solid #3b82f6; background:#1e293b; }
+.captchaHint { margin-top:10px; color:#facc15; font-weight:700; }
 form button { width:100%; padding:15px; margin-top:20px; border-radius:15px; border:none; background:#22c55e; font-weight:700; font-size:1.1rem; cursor:pointer; transition: all 0.3s; box-shadow:0 0 10px #22c55e; }
 form button:hover { background:#16a34a; transform: scale(1.05); box-shadow:0 0 20px #16a34a; }
 
@@ -36,6 +37,19 @@ form button:hover { background:#16a34a; transform: scale(1.05); box-shadow:0 0 2
 .publicBtn:hover { background:#2563eb; transform: scale(1.05); }
 .discordBtn { background:#7289da; color:#f1f5f9; }
 .discordBtn:hover { background:#5b6eae; transform: scale(1.05); }
+.adminBtn { background:#ef4444; color:#fff; display:none; }
+.adminBtn:hover { background:#dc2626; transform: scale(1.05); }
+
+/* ===== ADMIN PANEL ===== */
+#adminPanel { display:none; width:100%; max-width:900px; background:rgba(15,23,42,0.95); border:1px solid #334155; border-radius:20px; padding:25px; box-shadow:0 10px 25px rgba(0,0,0,0.45); }
+#adminPanel h3 { color:#f87171; margin-bottom:10px; }
+#adminPanel input { width:100%; padding:12px; border-radius:10px; border:none; background:#334155; color:#f8fafc; margin:10px 0; }
+#adminPanel button { padding:10px 16px; border:none; border-radius:10px; cursor:pointer; font-weight:700; margin-right:10px; }
+.danger { background:#ef4444; color:white; }
+.danger:hover { background:#dc2626; }
+.neutral { background:#475569; color:white; }
+#securityLog { margin-top:15px; max-height:220px; overflow:auto; background:#0f172a; border-radius:12px; padding:12px; font-size:0.95rem; }
+#securityLog p { margin-bottom:8px; color:#cbd5e1; }
 
 /* ===== REPORTS ===== */
 #reports { display:flex; flex-direction:column; gap:25px; max-width:900px; margin:0 auto; }
@@ -80,12 +94,26 @@ form button:hover { background:#16a34a; transform: scale(1.05); box-shadow:0 0 2
   <label>Original Game</label>
   <input type="text" id="originalGame" placeholder="Original game name" required>
 
+  <label>Captcha Verification</label>
+  <p class="captchaHint" id="captchaQuestion"></p>
+  <input type="text" id="captchaAnswer" placeholder="Solve captcha to continue" required>
+
   <button type="submit">Send Takedown Request</button>
 </form>
 
 <!-- ACTION BUTTONS -->
 <button class="actionBtn publicBtn" onclick="window.open('https://univexity.github.io/','_blank')">View Public Takedown Board</button>
 <button class="actionBtn discordBtn" onclick="window.open('https://discord.gg/8wad3WGRgm','_blank')">Join Our Discord</button>
+<button class="actionBtn adminBtn" id="adminAccessBtn">Open Admin Security Panel</button>
+
+<section id="adminPanel">
+  <h3>🔒 Restricted Admin Panel</h3>
+  <p>This endpoint is hidden and password protected. Failed attempts are logged locally.</p>
+  <input type="password" id="adminPassword" placeholder="Enter admin password">
+  <button class="neutral" id="unlockAdminBtn">Unlock</button>
+  <button class="danger" id="clearReportsBtn" disabled>Clear All Reports</button>
+  <div id="securityLog"></div>
+</section>
 
 <!-- PUBLIC REPORTS -->
 <section id="reportsSection">
@@ -98,10 +126,97 @@ form button:hover { background:#16a34a; transform: scale(1.05); box-shadow:0 0 2
 <script>
 // ===== VARIABLES =====
 let reports = JSON.parse(localStorage.getItem("reports") || "[]");
+let securityEvents = JSON.parse(localStorage.getItem("securityEvents") || "[]");
 let currentUser = "";
+let userIp = "Unknown";
+let captchaExpected = 0;
+let isAdminUnlocked = false;
 const form = document.getElementById("takedownForm");
 const reportsDiv = document.getElementById("reports");
 const scrollBtn = document.getElementById("scrollTopBtn");
+const captchaQuestion = document.getElementById("captchaQuestion");
+const captchaAnswer = document.getElementById("captchaAnswer");
+const adminPanel = document.getElementById("adminPanel");
+const adminAccessBtn = document.getElementById("adminAccessBtn");
+const unlockAdminBtn = document.getElementById("unlockAdminBtn");
+const adminPasswordInput = document.getElementById("adminPassword");
+const clearReportsBtn = document.getElementById("clearReportsBtn");
+const securityLog = document.getElementById("securityLog");
+const ADMIN_HASH = "a47e5ee6be91fa01ea5345b7d42d05c18243faa106d4fa99d91f097ad6d2ad99"; // Password: UnivexityAdmin!2026
+const HIDDEN_ADMIN_URL = "#uvx-admin-portal";
+const MAX_SUBMISSIONS = 3;
+const WINDOW_MS = 10 * 60 * 1000;
+
+function logSecurityEvent(message) {
+  const event = {
+    timestamp: new Date().toLocaleString(),
+    ip: userIp,
+    message
+  };
+  securityEvents.unshift(event);
+  securityEvents = securityEvents.slice(0, 75);
+  localStorage.setItem("securityEvents", JSON.stringify(securityEvents));
+  renderSecurityLog();
+}
+
+function renderSecurityLog() {
+  if (!securityLog) return;
+  securityLog.innerHTML = securityEvents.length
+    ? securityEvents.map(event => `<p><b>${event.timestamp}</b> | <b>${event.ip}</b> — ${event.message}</p>`).join("")
+    : "<p>No security events logged yet.</p>";
+}
+
+function generateCaptcha() {
+  const n1 = Math.floor(Math.random() * 9) + 1;
+  const n2 = Math.floor(Math.random() * 9) + 1;
+  captchaExpected = n1 + n2;
+  captchaQuestion.textContent = `What is ${n1} + ${n2}?`;
+}
+
+function getRateLimitTimestamps() {
+  return JSON.parse(localStorage.getItem("submissionTimestamps") || "[]");
+}
+
+function isRateLimited() {
+  const now = Date.now();
+  const fresh = getRateLimitTimestamps().filter(ts => now - ts < WINDOW_MS);
+  localStorage.setItem("submissionTimestamps", JSON.stringify(fresh));
+  return fresh.length >= MAX_SUBMISSIONS;
+}
+
+function recordSubmissionAttempt() {
+  const now = Date.now();
+  const fresh = getRateLimitTimestamps().filter(ts => now - ts < WINDOW_MS);
+  fresh.push(now);
+  localStorage.setItem("submissionTimestamps", JSON.stringify(fresh));
+}
+
+async function sha256(input) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function loadIpAddress() {
+  try {
+    const response = await fetch("https://api.ipify.org?format=json");
+    if (!response.ok) throw new Error("IP fetch failed");
+    const data = await response.json();
+    userIp = data.ip || "Unknown";
+    logSecurityEvent("Visitor loaded takedown system.");
+  } catch {
+    userIp = "Unavailable";
+    logSecurityEvent("Visitor loaded takedown system (IP unavailable).");
+  }
+}
+
+function initHiddenAdminRoute() {
+  if (window.location.hash === HIDDEN_ADMIN_URL) {
+    adminAccessBtn.style.display = "inline-block";
+    logSecurityEvent("Hidden admin URL accessed.");
+  }
+}
 
 // ===== DISPLAY REPORTS =====
 function displayReports() {
@@ -136,17 +251,64 @@ form.addEventListener("submit",(e)=>{
   const gameName=document.getElementById("gameName").value.trim();
   const gameLink=document.getElementById("gameLink").value.trim();
   const originalGame=document.getElementById("originalGame").value.trim();
+  const captchaValue = Number(captchaAnswer.value.trim());
 
   if(!gameLink.includes("meta.com")) { alert("Only Meta links allowed!"); return; }
+  if (captchaValue !== captchaExpected) {
+    alert("Captcha failed. Please try again.");
+    logSecurityEvent("Captcha validation failed.");
+    generateCaptcha();
+    captchaAnswer.value = "";
+    return;
+  }
+  if (isRateLimited()) {
+    alert("Rate limit reached. Please wait before submitting more requests.");
+    logSecurityEvent("Rate limit blocked a submission.");
+    return;
+  }
   if(!reporter||!gameName||!gameLink||!originalGame) return;
 
-  const report={reporter,gameName,gameLink,originalGame,timestamp:new Date().toLocaleString()};
+  recordSubmissionAttempt();
+  const report={reporter,gameName,gameLink,originalGame,timestamp:new Date().toLocaleString(),ip:userIp};
   reports.push(report);
   localStorage.setItem("reports",JSON.stringify(reports));
+  logSecurityEvent(`New report submitted by ${reporter}.`);
   currentUser=reporter;
   displayReports();
   alert("Takedown request submitted!");
   form.reset();
+  generateCaptcha();
+});
+
+adminAccessBtn.addEventListener("click", () => {
+  adminPanel.style.display = adminPanel.style.display === "block" ? "none" : "block";
+});
+
+unlockAdminBtn.addEventListener("click", async () => {
+  const typed = adminPasswordInput.value.trim();
+  if (!typed) return;
+  const typedHash = await sha256(typed);
+
+  if (typedHash === ADMIN_HASH) {
+    isAdminUnlocked = true;
+    clearReportsBtn.disabled = false;
+    logSecurityEvent("Admin authentication successful.");
+    alert("Admin unlocked.");
+  } else {
+    isAdminUnlocked = false;
+    clearReportsBtn.disabled = true;
+    logSecurityEvent("Failed admin authentication attempt.");
+    alert("Invalid admin password.");
+  }
+});
+
+clearReportsBtn.addEventListener("click", () => {
+  if (!isAdminUnlocked) return;
+  if (!confirm("Delete every report from this browser?")) return;
+  reports = [];
+  localStorage.setItem("reports", JSON.stringify(reports));
+  logSecurityEvent("Admin cleared all reports.");
+  displayReports();
 });
 
 // ===== SCROLL BUTTON =====
@@ -154,6 +316,10 @@ window.addEventListener('scroll',()=>{scrollBtn.style.display=window.scrollY>300
 
 // ===== INITIAL DISPLAY =====
 displayReports();
+renderSecurityLog();
+generateCaptcha();
+initHiddenAdminRoute();
+loadIpAddress();
 
 // ===== EASTER EGG (Shift + U) =====
 let secretCount=0;
