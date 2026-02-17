@@ -1,119 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Univexity Public Takedown Board</title>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@600&display=swap" rel="stylesheet">
-<style>
-/* ===== BASE STYLES ===== */
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Roboto',sans-serif; background: linear-gradient(135deg,#0f172a,#1e293b); color:#f1f5f9; min-height:100vh; padding:20px; transition: background 0.5s; }
-a { color:#38bdf8; text-decoration:none; }
-a:hover { text-decoration:underline; }
-h1,h2 { font-family:'Montserrat',sans-serif; text-align:center; color:#3b82f6; text-shadow:0 0 10px #3b82f6; margin-bottom:20px; }
-h2 { font-size:2rem; margin-top:40px; }
-
-/* ===== ABOUT US ===== */
-#about { max-width:900px; margin:40px auto; background: rgba(30,41,59,0.95); padding:30px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.5); line-height:1.6; }
-#about p { margin-bottom:15px; font-size:1rem; }
-
-/* ===== REPORTS ===== */
-#reports { display:flex; flex-direction:column; gap:25px; max-width:900px; margin:0 auto; margin-top:30px; }
-.report { background: rgba(30,41,59,0.95); padding:25px; border-radius:20px; box-shadow:0 10px 25px rgba(0,0,0,0.4); transition: transform 0.2s; position:relative; }
-.report:hover { transform: translateY(-5px); }
-.report b { color:#3b82f6; }
-.copyBtn { position:absolute; top:20px; right:20px; padding:8px 12px; background:#3b82f6; border:none; border-radius:12px; color:white; cursor:pointer; font-weight:700; transition: transform 0.2s, background 0.2s; }
-.copyBtn:hover { transform: scale(1.05); background:#2563eb; }
-
-/* ===== SCROLL TO TOP ===== */
-#scrollTopBtn { position:fixed; bottom:30px; right:30px; padding:12px 16px; border-radius:50%; border:none; background:#3b82f6; color:white; cursor:pointer; box-shadow:0 0 15px #3b82f6; display:none; transition: transform 0.3s; }
-#scrollTopBtn:hover { transform: scale(1.1); }
-
-/* ===== HEADER ===== */
-header { text-align:center; padding:40px 20px 20px; }
-header h1 { font-size:3rem; margin-bottom:10px; }
-header p { color:#94a3b8; font-size:1.2rem; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us Shutdown</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: #121212;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 700px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            color: #ff5555;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        a {
+            color: #00ffff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-
-<header>
-  <h1>Univexity Public Takedown Board</h1>
-  <p>Helping creators protect their games from unfair copies.</p>
-</header>
-
-<section id="about">
-  <h2>About Us</h2>
-  <p>Hi, my name is Univexity, and I created this platform with a simple mission: to help game creators protect their work. In the world of online gaming, copycats can appear quickly, and it is incredibly unfair to those who invest countless hours building unique experiences. This board serves as a transparent system where takedown requests can be tracked publicly, giving both visibility and accountability to the process.</p>
-  
-  <p>Game creation is a labor of love, requiring dedication, creativity, and passion. Unfortunately, when someone copies your game without permission, it diminishes your hard work and can demotivate even the most talented creators. I wanted to create a space that not only reports these incidents but also celebrates the original creators by ensuring they receive proper recognition and protection for their work.</p>
-  
-  <p>Through this system, you can submit a takedown request for any copied game you encounter, and it will appear publicly for all to see. The transparency of this board is essential; it allows the community to understand what has been reported, preventing repeated violations and encouraging fair play in the gaming ecosystem. By making submissions public, creators, moderators, and even players can all be aware of problematic copies.</p>
-  
-  <p>Our platform is built with simplicity in mind, but with powerful functionality. Each submission is stored securely, timestamps are tracked, and users can copy game links for easy reference. We also prioritize safety and transparency, ensuring that only genuine reports are submitted. Misuse of this system is strongly discouraged to maintain trust within the community.</p>
-  
-  <p>Beyond just reporting copies, this project reflects my personal belief in fairness and respect within the gaming world. I want every creator to feel supported and empowered, knowing there is a system that values their contributions. This board is more than just a tool—it’s a statement that originality matters, and hard work deserves recognition.</p>
-  
-  <p>Thank you for supporting this initiative. Whether you’re a creator submitting a report or a player learning about fairness, I hope this board fosters a healthier, more respectful gaming community. Together, we can make sure creativity is protected and that all games have the recognition they deserve.</p>
-</section>
-
-<section id="reports-section">
-  <h2>Public Takedown Requests</h2>
-  <div id="reports"></div>
-</section>
-
-<button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">⬆️</button>
-
-<script>
-// ===== LOAD REPORTS =====
-let reports = JSON.parse(localStorage.getItem("reports") || "[]");
-const reportsDiv = document.getElementById("reports");
-
-function displayReports() {
-  reportsDiv.innerHTML = "";
-  if(reports.length === 0) {
-    reportsDiv.innerHTML = "<p style='text-align:center;'>No takedown requests yet.</p>";
-    return;
-  }
-  
-  reports.forEach(report => {
-    const div = document.createElement("div");
-    div.className = "report";
-    div.innerHTML = `
-      <b>Game Name:</b> ${report.gameName}<br>
-      <b>Game Link:</b> <a href="${report.gameLink}" target="_blank">${report.gameLink}</a><br>
-      <b>Original Game:</b> ${report.originalGame}<br>
-      <b>Submitted:</b> ${report.timestamp || new Date().toLocaleString()}
-    `;
-    const copyBtn = document.createElement("button");
-    copyBtn.textContent = "Copy Link";
-    copyBtn.className = "copyBtn";
-    copyBtn.onclick = () => { navigator.clipboard.writeText(report.gameLink); alert("Link copied!"); };
-    div.appendChild(copyBtn);
-    reportsDiv.appendChild(div);
-  });
-}
-
-// ===== SCROLL BUTTON =====
-const scrollBtn = document.getElementById("scrollTopBtn");
-window.addEventListener('scroll', () => { scrollBtn.style.display = window.scrollY > 300 ? 'block' : 'none'; });
-
-// ===== INITIAL DISPLAY =====
-displayReports();
-
-// ===== EASTER EGG =====
-let secretCount = 0;
-document.addEventListener('keydown', e => {
-  if(e.key.toLowerCase() === 'u') { 
-    secretCount++; 
-    if(secretCount === 5) { 
-      alert("🎉 Secret Univexity Easter Egg Activated!"); 
-      secretCount = 0; 
-    } 
-  }
-});
-</script>
-
+    <div class="container">
+        <h1>About Us Page Shutdown</h1>
+        <p>Attention visitors,</p>
+        <p>This "About Us" page has officially been shut down. We no longer maintain this page on GitHub, and all information previously found here has been moved to our main website.</p>
+        <p>If you are visiting from the new website, we kindly ask that you contact our support team directly for any questions, concerns, or feedback. Our support team is ready to assist you promptly and ensure you get the help you need.</p>
+        <p>To reach our support team, please use this link: <a href="https://discord.gg/2SFx9fGGEw" target="_blank">https://discord.gg/2SFx9fGGEw</a>. We appreciate your understanding and look forward to helping you on our new platform.</p>
+        <p>Thank you for your patience and continued support as we transition all services to a modern and secure environment.</p>
+    </div>
 </body>
 </html>
